@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../design/colors.dart';
 import '../design/typography.dart';
+import '../l10n/app_localizations.dart';
 import '../models/peer.dart';
 
 /// Short mono-style identifier derived from a peer's UUID, e.g. "7F:3A:9C".
@@ -13,13 +14,13 @@ String shortPeerId(String id) {
       .replaceAll(RegExp(r':$'), '');
 }
 
-String deviceTypeFor(String platform) {
+String deviceTypeFor(AppLocalizations l10n, String platform) {
   switch (platform) {
     case 'android':
     case 'ios':
-      return 'Mobile';
+      return l10n.deviceTypeMobile;
     default:
-      return 'Desktop';
+      return l10n.deviceTypeDesktop;
   }
 }
 
@@ -31,6 +32,7 @@ class PeerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -62,7 +64,7 @@ class PeerTile extends StatelessWidget {
                   Text(peer.alias, style: AppTypography.listTitle),
                   const SizedBox(height: 2),
                   Text(
-                    '${deviceTypeFor(peer.platform)} · ${shortPeerId(peer.id)}',
+                    '${deviceTypeFor(l10n, peer.platform)} · ${shortPeerId(peer.id)}',
                     style: AppTypography.monoCaption,
                   ),
                 ],

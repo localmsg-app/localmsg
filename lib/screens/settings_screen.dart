@@ -3,12 +3,15 @@ import 'package:provider/provider.dart';
 
 import '../design/colors.dart';
 import '../design/typography.dart';
+import '../l10n/app_localizations.dart';
 import '../services/chat_store.dart';
 import '../services/device_identity_service.dart';
+import '../services/locale_service.dart';
 import '../services/network_info_service.dart';
 import '../services/notification_service.dart';
 import '../widgets/avatar.dart';
 import '../widgets/peer_tile.dart';
+import 'language_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -26,35 +29,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _networkInfo.currentNetworkName().then((name) {
-      if (mounted) setState(() => _networkName = name ?? 'Indisponible');
+      if (mounted) setState(() => _networkName = name);
     });
     context.read<ChatStore>().storageBytesUsed().then((bytes) {
       if (mounted) setState(() => _storageBytes = bytes);
     });
   }
 
-  String _formatBytes(int? bytes) {
+  String _formatBytes(AppLocalizations l10n, int? bytes) {
     if (bytes == null) return '…';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(0)} Ko';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} Mo';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(0)} ${l10n.storageUnitKB}';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} ${l10n.storageUnitMB}';
   }
 
-  Future<void> _editAlias(DeviceIdentityService identity) async {
+  Future<void> _editAlias(AppLocalizations l10n, DeviceIdentityService identity) async {
     final controller = TextEditingController(text: identity.alias);
     final newAlias = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Nom de cet appareil'),
+        title: Text(l10n.renameDialogTitle),
         content: TextField(controller: controller, autofocus: true),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Enregistrer'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, controller.text), child: Text(l10n.save)),
         ],
       ),
     );
@@ -65,21 +62,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final identity = context.watch<DeviceIdentityService>();
     final notifications = context.watch<NotificationService>();
+    final localeService = context.watch<LocaleService>();
 
     return Scaffold(
-      appBar: AppBar(title: Text('Settings', style: AppTypography.screenTitle)),
+      appBar: AppBar(title: Text(l10n.navSettings, style: AppTypography.screenTitle)),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         children: [
           Container(
             padding: const EdgeInsets.all(14),
             margin: const EdgeInsets.only(bottom: 20),
-            decoration: BoxDecoration(
-              color: AppColors.panel,
-              borderRadius: BorderRadius.circular(16),
-            ),
+            decoration: BoxDecoration(color: AppColors.panel, borderRadius: BorderRadius.circular(16)),
             child: Row(
               children: [
                 Avatar(id: identity.id, name: identity.alias, diameter: 52),
@@ -90,10 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       Text(identity.alias, style: AppTypography.profileName),
                       const SizedBox(height: 2),
-                      Text(
-                        'device: ${shortPeerId(identity.id)}',
-                        style: AppTypography.monoCaption,
-                      ),
+                      Text(l10n.settingsDeviceIdLabel(shortPeerId(identity.id)), style: AppTypography.monoCaption),
                     ],
                   ),
                 ),
@@ -101,31 +94,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           Container(
-            decoration: BoxDecoration(
-              color: AppColors.panel,
-              borderRadius: BorderRadius.circular(16),
-            ),
+            decoration: BoxDecoration(color: AppColors.panel, borderRadius: BorderRadius.circular(16)),
             clipBehavior: Clip.antiAlias,
             child: Column(
               children: [
                 _row(
-                  label: 'Device Name',
+                  label: l10n.settingsDeviceName,
                   value: identity.alias,
-                  onTap: () => _editAlias(identity),
+                  onTap: () => _editAlias(l10n, identity),
                 ),
                 _divider(),
-                _row(label: 'Network', value: _networkName ?? '…'),
+                _row(
+                  label: l10n.settingsLanguage,
+                  value: languageDisplayName(localeService.locale),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LanguageScreen())),
+                ),
+                _divider(),
+                _row(label: l10n.settingsNetwork, value: _networkName ?? l10n.settingsUnavailable),
                 _divider(),
                 _switchRow(
-                  label: 'Notifications',
+                  label: l10n.settingsNotifications,
                   value: notifications.enabled,
                   onChanged: (v) => notifications.setEnabled(v),
                 ),
                 _divider(),
-                _row(
-                  label: 'Storage',
-                  value: '${_formatBytes(_storageBytes)} utilisés',
-                ),
+                _row(label: l10n.settingsStorage, value: l10n.settingsStorageUsed(_formatBytes(l10n, _storageBytes))),
               ],
             ),
           ),
@@ -134,42 +127,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _divider() => const Divider(
-    color: AppColors.borderSubtle,
-    height: 1,
-    indent: 16,
-    endIndent: 16,
-  );
+  Widget _divider() => const Divider(color: AppColors.borderSubtle, height: 1, indent: 16, endIndent: 16);
 
-  Widget _row({
-    required String label,
-    required String value,
-    VoidCallback? onTap,
-  }) {
+  Widget _row({required String label, required String value, VoidCallback? onTap}) {
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Expanded(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 15,
-                  color: AppColors.text,
-                ),
-              ),
-            ),
+            Expanded(child: Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 15, color: AppColors.text))),
             Text(value, style: AppTypography.body),
             if (onTap != null) ...[
               const SizedBox(width: 8),
-              const Icon(
-                Icons.chevron_right,
-                size: 18,
-                color: AppColors.border,
-              ),
+              const Icon(Icons.chevron_right, size: 18, color: AppColors.border),
             ],
           ],
         ),
@@ -177,30 +148,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _switchRow({
-    required String label,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
+  Widget _switchRow({required String label, required bool value, required ValueChanged<bool> onChanged}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 15,
-                color: AppColors.text,
-              ),
-            ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppColors.accent,
-          ),
+          Expanded(child: Text(label, style: const TextStyle(fontFamily: 'Inter', fontSize: 15, color: AppColors.text))),
+          Switch(value: value, onChanged: onChanged, activeThumbColor: AppColors.accent),
         ],
       ),
     );

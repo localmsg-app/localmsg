@@ -1,0 +1,49 @@
+{
+  "@@locale": "en",
+
+  "navMessages": "Messages",
+  "@navMessages": {"description": "Bottom nav / sidebar label for the conversations list"},
+  "navNearby": "Nearby",
+  "@navNearby": {"description": "Bottom nav label and screen title for device discovery"},
+  "navSettings": "Settings",
+  "@navSettings": {"description": "Bottom nav label, screen title, and tooltip for settings"},
+
+  "nearbySearchingNetwork": "Searching on {network}…",
+  "@nearbySearchingNetwork": {"placeholders": {"network": {"type": "String"}}},
+  "nearbySearchingGeneric": "Searching for devices…",
+  "nearbyDevicesFound": "{count, plural, =0{No devices found} =1{1 device found} other{{count} devices found}}",
+  "@nearbyDevicesFound": {"placeholders": {"count": {"type": "int"}}},
+  "nearbyEmpty": "No devices yet",
+
+  "conversationsEmpty": "No conversations yet. Tap + to find a nearby device.",
+  "conversationsEmptySidebar": "No conversations",
+  "selectConversation": "Select a conversation",
+  "addDeviceTooltip": "Add device",
+
+  "chatActiveNow": "Active now",
+  "chatOffline": "Offline",
+  "chatEmpty": "No messages yet",
+  "chatComposerHint": "Message {name}…",
+  "@chatComposerHint": {"placeholders": {"name": {"type": "String"}}},
+  "chatSendFailed": "Message not sent: device unreachable",
+
+  "settingsDeviceName": "Device Name",
+  "settingsLanguage": "Language",
+  "settingsNetwork": "Network",
+  "settingsNotifications": "Notifications",
+  "settingsStorage": "Storage",
+  "settingsStorageUsed": "{size} used",
+  "@settingsStorageUsed": {"placeholders": {"size": {"type": "String"}}},
+  "settingsUnavailable": "Unavailable",
+  "settingsDeviceIdLabel": "device: {id}",
+  "@settingsDeviceIdLabel": {"placeholders": {"id": {"type": "String"}}},
+  "storageUnitKB": "KB",
+  "storageUnitMB": "MB",
+
+  "renameDialogTitle": "Device name",
+  "cancel": "Cancel",
+  "save": "Save",
+
+  "deviceTypeMobile": "Mobile",
+  "deviceTypeDesktop": "Desktop"
+}

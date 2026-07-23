@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../design/colors.dart';
 import '../design/typography.dart';
+import '../l10n/app_localizations.dart';
 import '../services/discovery_service.dart';
 import '../services/network_info_service.dart';
 import '../widgets/peer_tile.dart';
@@ -33,6 +34,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final peers = context.watch<DiscoveryService>().peers;
 
     return Scaffold(
@@ -40,12 +42,12 @@ class _NearbyScreenState extends State<NearbyScreen> {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: [
-          Text('Nearby', style: AppTypography.screenTitle),
+          Text(l10n.navNearby, style: AppTypography.screenTitle),
           const SizedBox(height: 4),
           Text(
             _networkName != null
-                ? 'Recherche sur $_networkName…'
-                : 'Recherche d\'appareils…',
+                ? l10n.nearbySearchingNetwork(_networkName!)
+                : l10n.nearbySearchingGeneric,
             style: AppTypography.body,
           ),
           const SizedBox(height: 24),
@@ -54,19 +56,14 @@ class _NearbyScreenState extends State<NearbyScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Text(
-              '${peers.length} appareils trouvés'.toUpperCase(),
+              l10n.nearbyDevicesFound(peers.length).toUpperCase(),
               style: AppTypography.eyebrow,
             ),
           ),
           if (peers.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Center(
-                child: Text(
-                  'Aucun appareil pour le moment',
-                  style: AppTypography.body,
-                ),
-              ),
+              child: Center(child: Text(l10n.nearbyEmpty, style: AppTypography.body)),
             ),
           for (final peer in peers) ...[
             PeerTile(
@@ -74,8 +71,7 @@ class _NearbyScreenState extends State<NearbyScreen> {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      ChatScreen(peerId: peer.id, peerAlias: peer.alias),
+                  builder: (_) => ChatScreen(peerId: peer.id, peerAlias: peer.alias),
                 ),
               ),
             ),

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../design/colors.dart';
 import '../design/typography.dart';
+import '../l10n/app_localizations.dart';
 import '../models/chat_message.dart';
 import '../models/peer.dart';
 import '../services/chat_store.dart';
@@ -79,17 +80,16 @@ class _ChatScreenState extends State<ChatScreen> {
     if (mounted) {
       setState(() => _sending = false);
       if (!ok) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Message non envoyé : appareil injoignable'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.chatSendFailed)));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final discovery = context.watch<DiscoveryService>();
 
     Peer? livePeer;
@@ -134,7 +134,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      isOnline ? 'Active now' : 'Hors ligne',
+                      isOnline ? l10n.chatActiveNow : l10n.chatOffline,
                       style: const TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 12,
@@ -152,12 +152,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: messages.isEmpty
-                ? Center(
-                    child: Text(
-                      'Aucun message pour le moment',
-                      style: AppTypography.body,
-                    ),
-                  )
+                ? Center(child: Text(l10n.chatEmpty, style: AppTypography.body))
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -187,7 +182,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           fontSize: 14,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Message ${widget.peerAlias}…',
+                          hintText: l10n.chatComposerHint(widget.peerAlias),
                           hintStyle: const TextStyle(
                             color: AppColors.textDim,
                             fontFamily: 'Inter',

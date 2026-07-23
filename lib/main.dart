@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'l10n/app_localizations.dart';
 import 'screens/root_shell.dart';
 import 'services/chat_repository.dart';
 import 'services/chat_server.dart';
 import 'services/chat_store.dart';
 import 'services/device_identity_service.dart';
 import 'services/discovery_service.dart';
+import 'services/locale_service.dart';
 import 'services/notification_service.dart';
 import 'theme.dart';
 
@@ -15,6 +17,9 @@ Future<void> main() async {
 
   final identity = DeviceIdentityService();
   await identity.load();
+
+  final localeService = LocaleService();
+  await localeService.load();
 
   final chatRepository = ChatRepository();
   await chatRepository.init();
@@ -43,6 +48,7 @@ Future<void> main() async {
       discovery: discovery,
       chatStore: chatStore,
       notificationService: notificationService,
+      localeService: localeService,
     ),
   );
 }
@@ -52,6 +58,7 @@ class LocalMsgApp extends StatelessWidget {
   final DiscoveryService discovery;
   final ChatStore chatStore;
   final NotificationService notificationService;
+  final LocaleService localeService;
 
   const LocalMsgApp({
     super.key,
@@ -59,6 +66,7 @@ class LocalMsgApp extends StatelessWidget {
     required this.discovery,
     required this.chatStore,
     required this.notificationService,
+    required this.localeService,
   });
 
   @override
@@ -69,13 +77,21 @@ class LocalMsgApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: discovery),
         ChangeNotifierProvider.value(value: chatStore),
         ChangeNotifierProvider.value(value: notificationService),
+        ChangeNotifierProvider.value(value: localeService),
       ],
-      child: MaterialApp(
-        title: 'LocalMsg',
-        theme: buildAppTheme(),
-        darkTheme: buildAppTheme(),
-        themeMode: ThemeMode.dark,
-        home: const RootShell(),
+      child: Consumer<LocaleService>(
+        builder: (context, locale, _) {
+          return MaterialApp(
+            title: 'LocalMsg',
+            theme: buildAppTheme(),
+            darkTheme: buildAppTheme(),
+            themeMode: ThemeMode.dark,
+            locale: locale.locale,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const RootShell(),
+          );
+        },
       ),
     );
   }

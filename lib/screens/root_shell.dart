@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../design/colors.dart';
 import '../design/typography.dart';
+import '../l10n/app_localizations.dart';
 import '../services/chat_store.dart';
 import '../services/discovery_service.dart';
 import '../widgets/avatar.dart';
@@ -29,8 +30,7 @@ class _RootShellState extends State<RootShell> {
   String? _selectedPeerId;
   String? _selectedPeerAlias;
 
-  bool get _isDesktop =>
-      Platform.isMacOS || Platform.isWindows || Platform.isLinux;
+  bool get _isDesktop => Platform.isMacOS || Platform.isWindows || Platform.isLinux;
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +38,8 @@ class _RootShellState extends State<RootShell> {
   }
 
   Widget _buildMobile(BuildContext context) {
-    final screens = const [
-      ConversationsScreen(),
-      NearbyScreen(),
-      SettingsScreen(),
-    ];
+    final l10n = AppLocalizations.of(context)!;
+    final screens = const [ConversationsScreen(), NearbyScreen(), SettingsScreen()];
     return Scaffold(
       body: IndexedStack(index: _mobileTabIndex, children: screens),
       bottomNavigationBar: NavigationBar(
@@ -50,20 +47,17 @@ class _RootShellState extends State<RootShell> {
         onDestinationSelected: (i) => setState(() => _mobileTabIndex = i),
         backgroundColor: AppColors.panel,
         indicatorColor: AppColors.accentSoft,
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Messages',
+            icon: const Icon(Icons.chat_bubble_outline),
+            selectedIcon: const Icon(Icons.chat_bubble),
+            label: l10n.navMessages,
           ),
+          NavigationDestination(icon: const Icon(Icons.wifi_tethering), label: l10n.navNearby),
           NavigationDestination(
-            icon: Icon(Icons.wifi_tethering),
-            label: 'Nearby',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            selectedIcon: const Icon(Icons.settings),
+            label: l10n.navSettings,
           ),
         ],
       ),
@@ -71,6 +65,7 @@ class _RootShellState extends State<RootShell> {
   }
 
   Widget _buildDesktop(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final discoveredCount = context.watch<DiscoveryService>().peers.length;
     final conversations = context.watch<ChatStore>().conversations;
 
@@ -79,9 +74,7 @@ class _RootShellState extends State<RootShell> {
         children: [
           Container(
             width: 280,
-            decoration: const BoxDecoration(
-              border: Border(right: BorderSide(color: AppColors.border)),
-            ),
+            decoration: const BoxDecoration(border: Border(right: BorderSide(color: AppColors.border))),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -90,38 +83,18 @@ class _RootShellState extends State<RootShell> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          'NEARBY · $discoveredCount',
-                          style: AppTypography.eyebrow,
-                        ),
+                        child: Text('${l10n.navNearby.toUpperCase()} · $discoveredCount', style: AppTypography.eyebrow),
                       ),
                       IconButton(
-                        icon: const Icon(
-                          Icons.add_circle_outline,
-                          color: AppColors.accent,
-                          size: 20,
-                        ),
-                        tooltip: 'Ajouter un appareil',
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const NearbyScreen(),
-                          ),
-                        ),
+                        icon: const Icon(Icons.add_circle_outline, color: AppColors.accent, size: 20),
+                        tooltip: l10n.addDeviceTooltip,
+                        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NearbyScreen())),
                       ),
                       IconButton(
-                        icon: const Icon(
-                          Icons.settings_outlined,
-                          color: AppColors.textDim,
-                          size: 20,
-                        ),
-                        tooltip: 'Réglages',
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SettingsScreen(),
-                          ),
-                        ),
+                        icon: const Icon(Icons.settings_outlined, color: AppColors.textDim, size: 20),
+                        tooltip: l10n.navSettings,
+                        onPressed: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
                       ),
                     ],
                   ),
@@ -130,10 +103,7 @@ class _RootShellState extends State<RootShell> {
                   child: conversations.isEmpty
                       ? Padding(
                           padding: const EdgeInsets.all(18),
-                          child: Text(
-                            'Aucune conversation',
-                            style: AppTypography.body,
-                          ),
+                          child: Text(l10n.conversationsEmptySidebar, style: AppTypography.body),
                         )
                       : ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -148,29 +118,19 @@ class _RootShellState extends State<RootShell> {
                                 _selectedPeerAlias = c.alias;
                               }),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 10,
-                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                                 margin: const EdgeInsets.symmetric(vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: active
-                                      ? AppColors.accentSoft
-                                      : Colors.transparent,
+                                  color: active ? AppColors.accentSoft : Colors.transparent,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
                                   children: [
-                                    Avatar(
-                                      id: c.peerId,
-                                      name: c.alias,
-                                      diameter: 38,
-                                    ),
+                                    Avatar(id: c.peerId, name: c.alias, diameter: 38),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             c.alias,
@@ -185,11 +145,7 @@ class _RootShellState extends State<RootShell> {
                                             c.lastText,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontFamily: 'Inter',
-                                              fontSize: 12,
-                                              color: AppColors.textDim,
-                                            ),
+                                            style: const TextStyle(fontFamily: 'Inter', fontSize: 12, color: AppColors.textDim),
                                           ),
                                         ],
                                       ),
@@ -206,17 +162,8 @@ class _RootShellState extends State<RootShell> {
           ),
           Expanded(
             child: _selectedPeerId == null
-                ? Center(
-                    child: Text(
-                      'Sélectionnez une conversation',
-                      style: AppTypography.body,
-                    ),
-                  )
-                : ChatScreen(
-                    key: ValueKey(_selectedPeerId),
-                    peerId: _selectedPeerId!,
-                    peerAlias: _selectedPeerAlias!,
-                  ),
+                ? Center(child: Text(l10n.selectConversation, style: AppTypography.body))
+                : ChatScreen(key: ValueKey(_selectedPeerId), peerId: _selectedPeerId!, peerAlias: _selectedPeerAlias!),
           ),
         ],
       ),

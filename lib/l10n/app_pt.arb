@@ -1,0 +1,41 @@
+{
+  "@@locale": "pt",
+
+  "navMessages": "Mensagens",
+  "navNearby": "Por perto",
+  "navSettings": "Definições",
+
+  "nearbySearchingNetwork": "Pesquisando em {network}…",
+  "nearbySearchingGeneric": "Pesquisando dispositivos…",
+  "nearbyDevicesFound": "{count, plural, =0{Nenhum dispositivo encontrado} =1{1 dispositivo encontrado} other{{count} dispositivos encontrados}}",
+  "nearbyEmpty": "Ainda sem dispositivos",
+
+  "conversationsEmpty": "Ainda sem conversas. Toque em + para encontrar um dispositivo por perto.",
+  "conversationsEmptySidebar": "Sem conversas",
+  "selectConversation": "Selecione uma conversa",
+  "addDeviceTooltip": "Adicionar dispositivo",
+
+  "chatActiveNow": "Ativo agora",
+  "chatOffline": "Offline",
+  "chatEmpty": "Ainda sem mensagens",
+  "chatComposerHint": "Mensagem para {name}…",
+  "chatSendFailed": "Mensagem não enviada: dispositivo inacessível",
+
+  "settingsDeviceName": "Nome do dispositivo",
+  "settingsLanguage": "Idioma",
+  "settingsNetwork": "Rede",
+  "settingsNotifications": "Notificações",
+  "settingsStorage": "Armazenamento",
+  "settingsStorageUsed": "{size} usados",
+  "settingsUnavailable": "Indisponível",
+  "settingsDeviceIdLabel": "dispositivo: {id}",
+  "storageUnitKB": "KB",
+  "storageUnitMB": "MB",
+
+  "renameDialogTitle": "Nome deste dispositivo",
+  "cancel": "Cancelar",
+  "save": "Salvar",
+
+  "deviceTypeMobile": "Celular",
+  "deviceTypeDesktop": "Computador"
+}

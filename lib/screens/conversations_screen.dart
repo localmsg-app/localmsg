@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../design/colors.dart';
 import '../design/typography.dart';
+import '../l10n/app_localizations.dart';
 import '../services/chat_store.dart';
 import '../widgets/avatar.dart';
 import 'chat_screen.dart';
@@ -25,11 +26,12 @@ class ConversationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final conversations = context.watch<ChatStore>().conversations;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Messages', style: AppTypography.screenTitle),
+        title: Text(l10n.navMessages, style: AppTypography.screenTitle),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -56,7 +58,7 @@ class ConversationsScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Text(
-                  'Aucune conversation. Touchez + pour trouver un appareil à proximité.',
+                  l10n.conversationsEmpty,
                   textAlign: TextAlign.center,
                   style: AppTypography.body,
                 ),
