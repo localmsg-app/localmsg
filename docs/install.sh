@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="sindus/localmsg"
+REPO="localmsg-app/localmsg"
 
 case "$(uname -s)" in
   Darwin)
     echo "macOS détecté — installation via Homebrew..."
-    brew tap sindus/localmsg "https://github.com/${REPO}"
+    brew tap localmsg-app/localmsg "https://github.com/${REPO}"
     brew install --cask localmsg
     ;;
   Linux)

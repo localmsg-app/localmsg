@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$repo = "sindus/localmsg"
+$repo = "localmsg-app/localmsg"
 $url = "https://github.com/$repo/releases/latest/download/localmsg-setup.exe"
 $out = Join-Path $env:TEMP "localmsg-setup.exe"
 
