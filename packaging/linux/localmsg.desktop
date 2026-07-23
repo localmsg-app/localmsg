@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=LocalMsg
+Comment=Messagerie sur réseau local
+Exec=localmsg
+Icon=localmsg
+Categories=Network;Chat;
+Terminal=false
+Version=1.0

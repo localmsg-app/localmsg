@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LocalMsg — messagerie sur réseau local</title>
+<meta name="description" content="Deux appareils sur le même réseau se découvrent automatiquement et échangent des messages. Pas de serveur, pas de compte, pas de cloud.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%230E2A47%22/><circle cx=%2250%22 cy=%2250%22 r=%2210%22 fill=%22%235EEAD4%22/><circle cx=%2250%22 cy=%2250%22 r=%2228%22 fill=%22none%22 stroke=%22%235EEAD4%22 stroke-width=%224%22 opacity=%220.6%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #081625;
+    --blueprint: #0E2A47;
+    --blueprint-line: #4A7FB5;
+    --cyan: #5EEAD4;
+    --amber: #FFB454;
+    --paper: #F4F7FA;
+    --paper-dim: #B9C7D6;
+    --grid-line: rgba(244, 247, 250, 0.07);
+    --radius: 14px;
+    --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: 'IBM Plex Sans', system-ui, sans-serif;
+    --display: 'Space Grotesk', var(--sans);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--sans);
+    line-height: 1.55;
+    overflow-x: hidden;
+  }
+
+  a { color: var(--cyan); }
+
+  .grid-bg {
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  header.hero {
+    background: radial-gradient(circle at 50% -10%, var(--blueprint) 0%, var(--ink) 72%);
+    padding: 96px 24px 80px;
+    text-align: center;
+    position: relative;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+
+  h1.brand {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: clamp(2.6rem, 7vw, 4.5rem);
+    margin: 14px 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .tagline {
+    max-width: 46ch;
+    margin: 0 auto;
+    color: var(--paper-dim);
+    font-size: 1.08rem;
+  }
+
+  .schematic-note {
+    margin-top: 22px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--blueprint-line);
+  }
+
+  /* --- discovery visualization (signature element) --- */
+  .discovery {
+    width: min(560px, 90vw);
+    margin: 44px auto 8px;
+  }
+  .discovery svg { width: 100%; height: auto; overflow: visible; }
+  .node-box { fill: var(--ink); stroke: var(--cyan); stroke-width: 2; }
+  .node-dot { fill: var(--cyan); }
+  .link-line {
+    stroke: var(--blueprint-line);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 5;
+    fill: none;
+    opacity: 0;
+    animation: link-in 4s ease-in-out infinite;
+  }
+  .link-line.b { animation-delay: 0.4s; }
+  .ping {
+    fill: none;
+    stroke: var(--cyan);
+    stroke-width: 2;
+    transform-origin: center;
+    opacity: 0;
+    animation: ping 4s ease-out infinite;
+  }
+  .ping.b { animation-delay: 0.4s; }
+  .pkt-label {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    fill: var(--paper-dim);
+    opacity: 0;
+    animation: label-in 4s ease-in-out infinite;
+  }
+
+  @keyframes ping {
+    0%   { opacity: 0; transform: scale(0.3); }
+    15%  { opacity: 0.9; }
+    55%  { opacity: 0; transform: scale(2.4); }
+    100% { opacity: 0; transform: scale(2.4); }
+  }
+  @keyframes link-in {
+    0%, 20% { opacity: 0; }
+    45%, 100% { opacity: 0.9; }
+  }
+  @keyframes label-in {
+    0%, 30% { opacity: 0; transform: translateY(2px); }
+    50%, 100% { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .link-line, .ping, .pkt-label { animation: none; opacity: 0.9; }
+    .ping { display: none; }
+  }
+
+  .cta-row {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .term-card {
+    background: var(--blueprint);
+    border: 1px solid var(--blueprint-line);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--mono);
+    font-size: 14px;
+    max-width: 92vw;
+    overflow-x: auto;
+  }
+  .term-card .prompt { color: var(--cyan); user-select: none; }
+  .term-card code { color: var(--paper); white-space: pre; }
+
+  .copy-btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    background: var(--cyan);
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { background: var(--paper); }
+  .copy-btn:focus-visible, a:focus-visible, .tab-label:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+  }
+
+  .win-hint {
+    font-size: 13px;
+    color: var(--paper-dim);
+  }
+  .win-hint a { color: var(--amber); }
+
+  main { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+  section { padding: 64px 0; border-top: 1px solid rgba(244,247,250,0.09); }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 1.7rem;
+    margin: 0 0 8px;
+  }
+  .section-lede { color: var(--paper-dim); margin: 0 0 32px; max-width: 60ch; }
+
+  /* --- OS tabs (CSS-only) --- */
+  .tabs input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+  .tab-labels { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .tab-label {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--blueprint-line);
+    color: var(--paper-dim);
+    cursor: pointer;
+  }
+  .tab-panel { display: none; }
+  #tab-linux:checked ~ .tab-labels label[for="tab-linux"],
+  #tab-macos:checked ~ .tab-labels label[for="tab-macos"],
+  #tab-windows:checked ~ .tab-labels label[for="tab-windows"] {
+    background: var(--cyan); color: var(--ink); border-color: var(--cyan);
+  }
+  #tab-linux:checked ~ .panels #panel-linux,
+  #tab-macos:checked ~ .panels #panel-macos,
+  #tab-windows:checked ~ .panels #panel-windows {
+    display: block;
+  }
+
+  .card {
+    background: var(--blueprint);
+    border: 1px solid rgba(74,127,181,0.4);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 18px;
+  }
+  .card h3 {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--cyan);
+    margin: 0 0 14px;
+  }
+  .term-block {
+    background: var(--ink);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    overflow-x: auto;
+    margin-bottom: 14px;
+  }
+  .term-block code { white-space: pre; }
+  ol.steps, ul.steps { margin: 0; padding-left: 1.2em; color: var(--paper-dim); font-size: 14.5px; }
+  ol.steps li, ul.steps li { margin-bottom: 6px; }
+  ol.steps code, ul.steps code, p code {
+    font-family: var(--mono);
+    background: rgba(244,247,250,0.08);
+    padding: 1px 6px;
+    border-radius: 4px;
+    color: var(--paper);
+  }
+
+  .uninstall-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+  }
+  .uninstall-grid .card { margin-bottom: 0; }
+  .uninstall-grid h3 { color: var(--amber); }
+
+  footer {
+    padding: 40px 24px 64px;
+    text-align: center;
+    color: var(--paper-dim);
+    font-size: 13.5px;
+  }
+  footer .roadmap {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--blueprint-line);
+    margin-top: 10px;
+  }
+
+  @media (max-width: 600px) {
+    header.hero { padding: 64px 16px 56px; }
+    section { padding: 48px 0; }
+  }
+</style>
+</head>
+<body class="grid-bg">
+
+<header class="hero">
+  <p class="eyebrow">Réseau local · aucun serveur · aucun compte</p>
+  <h1 class="brand">LocalMsg</h1>
+  <p class="tagline">Deux appareils ouvrent l'app sur le même réseau, se trouvent tout seuls, et se parlent. Pas de cloud, pas d'inscription, pas de numéro de téléphone.</p>
+  <p class="schematic-note">découverte par multicast UDP · 239.100.100.100:53320</p>
+
+  <div class="discovery" aria-hidden="true">
+    <svg viewBox="0 0 400 160">
+      <line class="link-line" x1="80" y1="110" x2="200" y2="50" />
+      <line class="link-line b" x1="200" y1="50" x2="320" y2="110" />
+
+      <circle class="ping" cx="200" cy="50" r="14" />
+      <circle class="ping b" cx="200" cy="50" r="14" />
+
+      <rect class="node-box" x="64" y="94" width="32" height="32" rx="6" />
+      <circle class="node-dot" cx="80" cy="110" r="4" />
+      <text class="pkt-label" x="46" y="140">alice.local</text>
+
+      <rect class="node-box" x="184" y="34" width="32" height="32" rx="6" />
+      <circle class="node-dot" cx="200" cy="50" r="4" />
+      <text class="pkt-label" x="172" y="24">annonce</text>
+
+      <rect class="node-box" x="304" y="94" width="32" height="32" rx="6" />
+      <circle class="node-dot" cx="320" cy="110" r="4" />
+      <text class="pkt-label" x="292" y="140">bob.local</text>
+    </svg>
+  </div>
+
+  <div class="cta-row">
+    <div class="term-card">
+      <span class="prompt">$</span>
+      <code id="cmd-unix">curl -fsSL https://sindus.github.io/localmsg/install.sh | bash</code>
+      <button class="copy-btn" data-copy-target="cmd-unix">copier</button>
+    </div>
+    <p class="win-hint">Linux &amp; macOS. Sous Windows ? <a href="#install">voir plus bas</a>.</p>
+  </div>
+</header>
+
+<main>
+  <section id="install">
+    <h2>Installer</h2>
+    <p class="section-lede">Une commande, ou les étapes manuelles si vous préférez ne pas exécuter un script à l'aveugle.</p>
+
+    <div class="tabs">
+      <input type="radio" name="os" id="tab-linux" checked>
+      <input type="radio" name="os" id="tab-macos">
+      <input type="radio" name="os" id="tab-windows">
+
+      <div class="tab-labels">
+        <label class="tab-label" for="tab-linux" tabindex="0">Linux</label>
+        <label class="tab-label" for="tab-macos" tabindex="0">macOS</label>
+        <label class="tab-label" for="tab-windows" tabindex="0">Windows</label>
+      </div>
+
+      <div class="panels">
+        <div class="tab-panel" id="panel-linux">
+          <div class="card">
+            <h3>Une commande</h3>
+            <div class="term-block">
+              <code id="cmd-linux">curl -fsSL https://sindus.github.io/localmsg/install.sh | bash</code>
+              <button class="copy-btn" data-copy-target="cmd-linux">copier</button>
+            </div>
+            <p style="color:var(--paper-dim); font-size:14.5px;">
+              Sur Ubuntu/Debian, ça installe un paquet <code>.deb</code> via <code>apt</code>.
+              Sur les autres distributions, ça télécharge un AppImage dans <code>~/.local/bin</code>.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Manuellement</h3>
+            <ul class="steps">
+              <li><strong>Ubuntu / Debian</strong> — téléchargez <code>localmsg.deb</code> depuis la <a href="https://github.com/sindus/localmsg/releases/latest">page des releases</a>, puis : <code>sudo apt install ./localmsg.deb</code></li>
+              <li><strong>Autres distributions</strong> — téléchargez <code>localmsg.AppImage</code>, rendez-le exécutable (<code>chmod +x localmsg.AppImage</code>) et lancez-le directement.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-macos">
+          <div class="card">
+            <h3>Avec Homebrew</h3>
+            <div class="term-block">
+              <code id="cmd-brew">brew tap sindus/localmsg https://github.com/sindus/localmsg &amp;&amp; brew install --cask localmsg</code>
+              <button class="copy-btn" data-copy-target="cmd-brew">copier</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Ou en une commande</h3>
+            <div class="term-block">
+              <code id="cmd-mac">curl -fsSL https://sindus.github.io/localmsg/install.sh | bash</code>
+              <button class="copy-btn" data-copy-target="cmd-mac">copier</button>
+            </div>
+            <p style="color:var(--paper-dim); font-size:14.5px;">
+              L'app n'est pas signée par Apple. Au premier lancement, si macOS refuse de l'ouvrir :
+              clic droit sur l'app → <code>Ouvrir</code>, ou <code>xattr -cr /Applications/localmsg.app</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-windows">
+          <div class="card">
+            <h3>Une commande (PowerShell)</h3>
+            <div class="term-block">
+              <code id="cmd-win">powershell -c "irm https://sindus.github.io/localmsg/install.ps1 | iex"</code>
+              <button class="copy-btn" data-copy-target="cmd-win">copier</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Manuellement</h3>
+            <ul class="steps">
+              <li>Téléchargez <code>localmsg-setup.exe</code> depuis la <a href="https://github.com/sindus/localmsg/releases/latest">page des releases</a></li>
+              <li>Double-cliquez et suivez l'installeur</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="uninstall">
+    <h2>Désinstaller</h2>
+    <p class="section-lede">Aucune trace cachée à traquer — chaque méthode d'installation a sa propre commande de retrait.</p>
+    <div class="uninstall-grid">
+      <div class="card">
+        <h3>Ubuntu / Debian (.deb)</h3>
+        <p><code>sudo apt remove localmsg</code></p>
+      </div>
+      <div class="card">
+        <h3>AppImage</h3>
+        <p>Supprimez simplement <code>~/.local/bin/localmsg.AppImage</code></p>
+      </div>
+      <div class="card">
+        <h3>macOS (Homebrew)</h3>
+        <p><code>brew uninstall --cask localmsg</code><br><code>brew untap sindus/localmsg</code></p>
+      </div>
+      <div class="card">
+        <h3>Windows</h3>
+        <p>Paramètres → Applications, ou lancez <code>unins000.exe</code> dans le dossier d'installation.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p><a href="https://github.com/sindus/localmsg">Code source sur GitHub</a> — licence MIT</p>
+  <p class="roadmap">📱 iOS &amp; Android : prévus pour une prochaine étape</p>
+</footer>
+
+<script>
+  document.querySelectorAll('[data-copy-target]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = document.getElementById(btn.dataset.copyTarget).textContent;
+      navigator.clipboard.writeText(text).then(function () {
+        var original = btn.textContent;
+        btn.textContent = 'copié !';
+        setTimeout(function () { btn.textContent = original; }, 1500);
+      });
+    });
+  });
+</script>
+</body>
+</html>

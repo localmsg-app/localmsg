@@ -1,0 +1,10 @@
+Package: localmsg
+Version: __VERSION__
+Section: net
+Priority: optional
+Architecture: amd64
+Depends: libgtk-3-0, libglib2.0-0, libblkid1, liblzma5
+Maintainer: Sikander RAVATE <sikander.ravate@gmail.com>
+Description: LocalMsg - messagerie sur reseau local
+ Decouverte automatique d'appareils sur le meme reseau local (LAN)
+ et echange de messages texte en 1:1, facon LocalSend mais pour du texte.
